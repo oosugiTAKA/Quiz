@@ -11,73 +11,99 @@ import UIKit
 class QuizViewController: UIViewController {
     //出題数
     var questionNumber:Int = 5
-    //何問正解したかの共有
-    var correntAnswer:Int = 0
-    //randomの共有
-    var random:Int = 0
-    //解いた問題数の共有
+    
+    //現在の問題数
     var sum:Int = 0
-    //Quiz配列
-    var quiz=[NSArray]()
-    //weak参照
-    @IBOutlet weak var QuizText: UITextView!
+    
+    //正解数
+    var correctAnswer:Int = 0
+    
+    //乱数
+    var random:Int = 0
+    
+    //クイズを格納する配列
+    var quizArray = [NSMutableArray]()
+    
+    //クイズを表示するTextView
+    @IBOutlet var quizTextView: UITextView!
+    
+    //選択肢のボタン
+    @IBOutlet var choiceButtons: Array<UIButton>!
+    
+    //何問正解したか表すTextView
+    @IBOutlet var resultTextView: UITextView!
+    
+    //評価を表すTextView
+    @IBOutlet var rankTextView: UITextView!
 
+
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         //------------------------ここから下にクイズを書く------------------------//
-        quiz.append(["問題文","選択肢","選択肢2","選択肢3",1])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        quiz.append(["問題文2","選択肢","選択肢2","選択肢3",2])
-        
-        //------------------------ここから下にクイズを書く------------------------//
+        quizArray.append(["鯖は何て読むでしょう？","マグロ","サバ","サメ",2])
+        quizArray.append(["イクラはどの魚の卵","サーモン","チョウザメ","ウミガメ",1])
+        quizArray.append(["世界三大珍味　フォアグラ、トリュフ　あと1つは？","キャビア","フカヒレ","ロブスター",1])
+        quizArray.append(["2月14日は何の日","エイプリルフール","クリスマス","バレンタインデー",3])
+        quizArray.append(["大阪名物言うたら？","白い恋人","たこ焼き","ちんすこう",2])
+        quizArray.append(["りんごを英語で書くと？","orange","ringo","apple",3])
 
-        random = Int(arc4random()%UInt32(quiz.count))
-        QuizText.text=quiz[random][0] as NSString
+        //------------------------ここから下にクイズを書く------------------------//
+        choiceQuiz()
+    }
+    
+    func choiceQuiz() {
+        print(quizArray.count)
+        //クイズの問題文をシャッフルしてTextViewにセット
+        random = Int(arc4random_uniform(UInt32(quizArray.count)))
+        quizTextView.text = quizArray[random][0] as! NSString as String
         
+        //選択肢のボタンにそれぞれ選択肢のテキストをセット
+        for var i = 0; i < choiceButtons.count; i++ {
+            choiceButtons[i].setTitle(quizArray[random][i+1] as! String , forState: .Normal)
+            //どのボタンが押されたか判別するためのtagをセット
+            choiceButtons[i].tag = i + 1;
+        }
     }
-    @IBAction func Select1() {
+    
+    @IBAction func choiceAnswer(sender: UIButton) {
         sum++
-        if 1==quiz[random][4] as NSObject{
-            current()
+        print("random \(random)")
+        if quizArray[random][4] as! Int == sender.tag {
+            //正解数を増やす
+            correctAnswer++
         }
-        if(sum == questionNumber){
-            tapBtn()
-        }
-    }
-    @IBAction func Select2() {
-        sum++
-        if 2==quiz[random][4] as NSObject {
-            current()
-        }
-        if sum == questionNumber{
-            tapBtn()
+        
+        //解いた問題数の合計が予め設定していた問題数に達したら結果画面へ
+        if sum == questionNumber {
+            performSegueToResult()
+        } else {
+            quizArray.removeAtIndex(random)
+            choiceQuiz()
         }
     }
-    @IBAction func Select3() {
-        sum++
-        if 3==quiz[random][4] as NSObject {
-            current()
-        }
-        if sum == questionNumber{
-            tapBtn()
-        }
-    }
-    func current(){
-        println("true")
-        correntAnswer++
-    }
-    func tapBtn() {
+    
+    func performSegueToResult() {
         performSegueWithIdentifier("toResultView", sender: nil)
     }
-/*
+
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+        if (segue.identifier == "toResultView") {
+            
+            let ResultView : ResultViewController = segue.destinationViewController as! ResultViewController
+
+            ResultView.correctAnswer = self.correctAnswer
+            
+        }
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-*/
+    
+    
 }
+
+
